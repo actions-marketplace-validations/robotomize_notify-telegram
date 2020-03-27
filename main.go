@@ -11,41 +11,30 @@ import (
 )
 
 func main() {
-	icons := map[string]string{
-		"failure":   "❗",
-		"cancelled": "❕",
-		"success":   "✅",
-	}
+	var msg, link string
+	token := os.Getenv("INPUT_TOKEN")
+	chat := os.Getenv("INPUT_CHAT")
+	status := os.Getenv("INPUT_STATUS")
+	message := os.Getenv("INPUT_MESSAGE")
+	repo := os.Getenv("GITHUB_REPOSITORY")
+	commit := os.Getenv("GITHUB_SHA")
+	actor := os.Getenv("GITHUB_ACTOR")
 
-	var (
-		// inputs
-		token  = os.Getenv("INPUT_TOKEN")
-		chat   = os.Getenv("INPUT_CHAT")
-		status = os.Getenv("INPUT_STATUS")
-
-		// github env
-		workflow = os.Getenv("GITHUB_WORKFLOW")
-		repo     = os.Getenv("GITHUB_REPOSITORY")
-		commit   = os.Getenv("GITHUB_SHA")
-	)
-
-	if token == "" {
+	if token == "" || chat == "" || status == "" {
 		log.Fatal("token input is required")
 	}
-	if chat == "" {
-		log.Fatal("chat input is required")
+
+	client := tbot.NewClient(token, http.DefaultClient, "https://api.telegram.org")
+
+	link = fmt.Sprintf("https://github.com/%s/commit/%s/checks", repo, commit)
+
+	if message != "" {
+		msg = fmt.Sprintf(`*%s*: %s, %s ([%s](%s))`, strings.ToUpper(status), actor, message, repo, link)
+	} else {
+		msg = fmt.Sprintf(`*%s*: %s ([%s](%s))`, strings.ToUpper(status), actor, repo, link)
 	}
-	if status == "" {
-		log.Fatal("status input is required")
-	}
 
-	c := tbot.NewClient(token, http.DefaultClient, "https://api.telegram.org")
-
-	icon := icons[strings.ToLower(status)]
-	link := fmt.Sprintf("https://github.com/%s/commit/%s/checks", repo, commit)
-	msg := fmt.Sprintf(`%s*%s*: %s ([%s](%s))`, icon, status, repo, workflow, link)
-
-	_, err := c.SendMessage(chat, msg, tbot.OptParseModeMarkdown)
+	_, err := client.SendMessage(chat, msg, tbot.OptParseModeMarkdown)
 	if err != nil {
 		log.Fatalf("unable to send message: %v", err)
 	}

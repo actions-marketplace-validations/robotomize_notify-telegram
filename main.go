@@ -19,15 +19,18 @@ func main() {
 	repo := os.Getenv("GITHUB_REPOSITORY")
 	commit := os.Getenv("GITHUB_SHA")
 
-	if token == "" || chat == "" || status == "" {
+	if token == "" || chat == "" {
 		log.Fatal("one or more of the required parameters is empty")
 	}
 
 	client := tbot.NewClient(token, http.DefaultClient, "https://api.telegram.org")
 
 	link = fmt.Sprintf("https://github.com/%s/commit/%s/checks", repo, commit)
-
-	msg = fmt.Sprintf(`*%s*: %s [%s](%s)`, strings.ToUpper(status), message, commit, link)
+	if status != "" {
+		msg = fmt.Sprintf(`*%s*: %s [%s](%s)`, strings.ToUpper(status), message, commit, link)
+	} else {
+		msg = fmt.Sprintf(`%s [%s](%s)`, message, commit, link)
+	}
 
 	_, err := client.SendMessage(chat, msg, tbot.OptParseModeMarkdown)
 	if err != nil {

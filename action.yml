@@ -10,7 +10,7 @@ inputs:
     required: true
   status:
     description: 'Job status'
-    required: true
+    required: false
   message:
     description: 'Custom message'
     required: false

@@ -25,3 +25,4 @@ jobs:
         chat: ${{ secrets.chat }}
         token: ${{ secrets.token }}
         status: ${{ job.status }}
+        message: ${{ secrets.message }}
